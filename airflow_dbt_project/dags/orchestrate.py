@@ -6,7 +6,7 @@ from databricks.sdk.service.jobs import RunLifeCycleState, RunResultState
 
 from utils.databricks_helpers import trigger_and_monitor_databricks_job
 
-#from airflow_dbt_project.dags.utils.databricks_helpers import trigger_and_monitor_databricks_job
+# from airflow_dbt_project.dags.utils.databricks_helpers import trigger_and_monitor_databricks_job
 # docker and airflow looks directly inside dags folder, so we need to use relative import to access the databricks_helpers.py file in the utils folder.
 
 
@@ -43,11 +43,9 @@ def orchestrate():
     def silver_technical_tests():
         return "cd /opt/airflow/walmart_project && dbt test --select silver_t"
 
-    silver_business = BashOperator(
-            task_id='silver_business',
-            cwd='/opt/airflow/walmart_project',
-            bash_command='dbt run --select silver_b'
-        )
+    @task.bash
+    def silver_business():
+        return "cd /opt/airflow/walmart_project && dbt run --select silver_b"
 
     silver_business_tests = BashOperator(
         task_id='silver_business_tests',
@@ -73,6 +71,6 @@ def orchestrate():
         bash_command='dbt run --select gold/fact'
     )
 
-    ingest_cdc() >> clean_target() >> source_freshness() >> silver_technical() >> silver_technical_tests() >> silver_business >> silver_business_tests >> gold_ephermeral >> gold_dimensions >> gold_facts
+    ingest_cdc() >> clean_target() >> source_freshness() >> silver_technical() >> silver_technical_tests() >> silver_business() >> silver_business_tests >> gold_ephermeral >> gold_dimensions >> gold_facts
 
 orchestrate_dag = orchestrate()
