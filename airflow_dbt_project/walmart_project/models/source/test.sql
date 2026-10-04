@@ -1,0 +1,1 @@
+Select * from {{ source('walmart_databricks', 'customers') }};
